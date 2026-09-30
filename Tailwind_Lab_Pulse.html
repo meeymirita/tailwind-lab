@@ -380,12 +380,12 @@ dist/assets/style-XXXX.css   ← только использованные кл�
 <tr><td><code>first:</code>, <code>last:</code>, <code>odd:</code>, <code>even:</code>, <code>empty:</code></td><td>структурные</td><td>зебра таблицы (4.4)</td></tr>
 <tr><td><code>open:</code>, <code>checked:</code>, <code>user-invalid:</code>, <code>placeholder-shown:</code></td><td>состояния элементов и форм</td><td>FAQ, форма настроек</td></tr>
 <tr><td><code>group-hover:</code> (родитель с <code>group</code>)</td><td><code>.group:hover .x</code></td><td>карточка фичи (3.2)</td></tr>
-<tr><td><code>peer-checked:</code> (предыдущий сосед с <code>peer</code>)</td><td><code>.peer:checked ~ .x</code></td><td>переключатели, мобильное меню (4.2, 5.2)</td></tr>
+<tr><td><code>peer-checked:</code> (предыдущий сосед с <code>peer</code>)</td><td><code>.peer:checked ~ .x</code></td><td>переключатели (5.2), сломанное мобильное меню (4.2)</td></tr>
 <tr><td><code>has-checked:</code>, <code>has-[…]:</code>, <code>group-has-[…]:</code></td><td><code>:has()</code></td><td>тарифы месяц/год без JS (3.3)</td></tr>
 <tr><td><code>not-*:</code>, <code>in-*:</code></td><td><code>:not()</code>, «внутри предка в состоянии»</td><td>—</td></tr>
 <tr><td><code>aria-expanded:</code>, <code>aria-[sort=ascending]:</code>, <code>data-active:</code>, <code>data-[state=open]:</code></td><td>атрибуты</td><td>активный пункт сайдбара</td></tr>
 <tr><td><code>*:</code></td><td>все прямые дети</td><td>ячейки строки таблицы</td></tr>
-<tr><td><code>starting:</code>, <code>backdrop:</code>, <code>placeholder:</code>, <code>before:</code>, <code>after:</code></td><td><code>@starting-style</code>, псевдоэлементы</td><td>модальное окно (3.1, 4.2)</td></tr>
+<tr><td><code>starting:</code>, <code>backdrop:</code>, <code>placeholder:</code>, <code>before:</code>, <code>after:</code></td><td><code>@starting-style</code>, псевдоэлементы</td><td>модальное окно и меню на popover (4.1, 5.2)</td></tr>
 <tr><td><code>motion-safe:</code>, <code>motion-reduce:</code>, <code>print:</code>, <code>contrast-more:</code></td><td>медиафункции</td><td>6.2</td></tr>
 <tr><td><code>supports-[…]:</code></td><td><code>@supports</code></td><td>—</td></tr>
 <tr><td><code>dark:</code></td><td>по умолчанию <code>prefers-color-scheme: dark</code></td><td>5.1</td></tr>
@@ -454,7 +454,9 @@ dist/assets/style-XXXX.css   ← только использованные кл�
     │   ├── theme.js            переключатель темы
     │   └── app.js              модалка, бейджи статусов
     ├── .prettierrc
-    ├── Dockerfile  nginx.conf  (сессия 6)
+    ├── Dockerfile  nginx.conf  .dockerignore  (сессия 6)
+    ├── src/legacy-widget.css   (шаг 5.3)
+    ├── src/legacy/             (временная, шаг 6.1)
     └── package.json</code></pre>
 <h3>Поток: как класс становится CSS</h3>
 <pre><code>app.html:  &lt;span class="rounded-full bg-emerald-100 px-2 text-emerald-800 dark:bg-emerald-900/40"&gt;
@@ -645,8 +647,8 @@ curl -s localhost:5173/src/style.css | grep -c '\.text-red-500'</code></pre>
 &lt;/footer&gt;</code></pre>
 <p>Посмотрите на сетку возможностей — стоят ли карточки в колонки? Проверьте, есть ли правило для этого класса в CSS. Потом почините:</p>
 <pre><code>&lt;div class="mt-12 grid gap-6 grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]"&gt;</code></pre>
-<div class="why"><b>Зачем:</b> <code>flex flex-wrap gap-x-12 gap-y-4</code> — ряд логотипов с разными отступами по горизонтали и вертикали при переносе. Сетка «сколько влезет» — тот же <code>repeat(auto-fill, minmax(min(100%, 16rem), 1fr))</code>, что в CSS-лабе, только в произвольном значении. Пробел в <code>class</code> разделяет классы, поэтому <code>grid-cols-[repeat(auto-fill,</code> и <code>minmax(16rem,</code> — это два обрывка, ни один не распознаётся, и правило не генерируется. Внутри скобок пробелы убирают или заменяют подчёркиванием (<code>_</code>). Такая длинная строка — сигнал: если сетка повторяется, её место в <code>@utility</code> или теме (2.3). Tailwind не избавляет от понимания grid.</div>
-<div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>С пробелами карточки идут одной колонкой друг под другом, в DevTools у <code>div</code> только <code>display: grid</code> и <code>gap</code>, а в сгенерированном CSS правила <code>grid-cols-[…]</code> нет. После починки на широком экране три колонки, на узком — одна, без горизонтального скролла. Логотипы переносятся красиво, подвал — копирайт слева, ссылка справа.</p></div>
+<div class="why"><b>Зачем:</b> <code>flex flex-wrap gap-x-12 gap-y-4</code> — ряд логотипов с разными отступами по горизонтали и вертикали при переносе. Сетка «сколько влезет» — тот же <code>repeat(auto-fill, minmax(min(100%, 16rem), 1fr))</code>, что в CSS-лабе, только в произвольном значении. Пробел в <code>class</code> разделяет классы, поэтому <code>grid-cols-[repeat(auto-fill,</code> и <code>minmax(16rem,</code> и <code>1fr))]</code> — это три обрывка, ни один не распознаётся, и правило не генерируется. Внутри скобок пробелы убирают или заменяют подчёркиванием (<code>_</code>). Такая длинная строка — сигнал: если сетка повторяется, её место в <code>@utility</code> или теме (2.3, 5.3). Tailwind не избавляет от понимания grid.</div>
+<div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>С пробелами карточки идут одной колонкой друг под другом, в DevTools у <code>div</code> только <code>display: grid</code> и <code>gap</code>, а в сгенерированном CSS правила <code>grid-cols-[…]</code> нет. После починки на широком экране три-четыре колонки (сколько влезет по 16rem: около трёх на окнах ~850–1150 пикселей и четыре шире), на узком — одна, без горизонтального скролла. Логотипы переносятся красиво, подвал — копирайт слева, ссылка справа.</p></div>
 <div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Как записать <code>grid-template-columns: 1fr 20rem</code> произвольным значением? А <code>content: "→ "</code> в <code>before:</code>?</li><li>Вспомните CSS-лабу: какую утилиту нужно добавить flex-элементу с длинным текстом, чтобы <code>truncate</code> работал? Как она называется в Tailwind?</li><li>Сделайте сетку не больше трёх колонок, используя шкалу, а не произвольное значение (<code>sm:grid-cols-2 lg:grid-cols-3</code>). Чем это хуже и лучше <code>auto-fill</code>?</li></ul></div>
 </div></div>
 
@@ -663,7 +665,7 @@ curl -s localhost:5173/src/style.css | grep -c '\.text-red-500'</code></pre>
 &lt;a class="p-2 px-8 bg-slate-200"&gt;p-2 px-8&lt;/a&gt;
 &lt;a class="bg-sky-600 bg-rose-600 p-2 text-white"&gt;bg-sky-600 bg-rose-600&lt;/a&gt;
 &lt;a class="bg-rose-600 bg-sky-600 p-2 text-white"&gt;bg-rose-600 bg-sky-600&lt;/a&gt;</code></pre>
-<p>Затем попробуйте «перебить» цвет у последней кнопки суффиксом важности: <code>bg-rose-600!</code>. Удалите временную секцию.</p>
+<p>Затем попробуйте «перебить» цвет суффиксом важности: поставьте <code>bg-rose-600!</code> вместо <code>bg-rose-600</code> в обеих кнопках, где он есть. Удалите временную секцию.</p>
 <div class="why"><b>Зачем:</b> preflight — это reset Tailwind, и он радикальнее обычного. Заголовки выглядят как текст (размер и жирность задаются классами), у списков нет маркеров, у кнопок нет фона и рамки, а курсор над кнопкой — обычная стрелка (в v4 это сделано намеренно, как у нативных кнопок). Самый частый сюрприз v4 — <code>border</code> без цвета рисуется цветом <code>currentColor</code>, то есть цветом текста; всегда указывайте цвет рамки. Второй сюрприз важнее. Порядок классов в атрибуте <code>class</code> <b>ничего не решает</b>: все утилиты — одна специфичность в одном слое, побеждает то правило, что ниже в сгенерированном CSS. Tailwind выводит сокращения раньше полных свойств, поэтому <code>px-8</code> перебивает <code>p-2</code> при любом порядке. Для двух «равных» классов (<code>bg-sky-600</code> и <code>bg-rose-600</code>) победитель определяется внутренним порядком Tailwind, и вам он неподвластен. Правило: <b>не ставьте на элемент конфликтующие классы</b>. В JS-проектах, где классы склеиваются из пропсов, для этого есть библиотека <code>tailwind-merge</code>. Суффикс <code>!</code> добавляет <code>!important</code> — аварийный люк, а не инструмент.</div>
 <div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>Заголовок размером с обычный текст, список без маркеров, кнопка выглядит как текст, у блока рамка того же голубого цвета, что и текст. Кнопки с <code>px-8 p-2</code> и <code>p-2 px-8</code> одинаковые: широкие по горизонтали, узкие по вертикали. Две цветные кнопки одного цвета независимо от порядка классов — какого именно, покажет DevTools (перечёркнутое правило проиграло). С <code>bg-rose-600!</code> обе розовые.</p></div>
 <div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Откройте в DevTools правила <code>.bg-sky-600</code> и <code>.bg-rose-600</code>. Почему победил именно этот? Можно ли на это полагаться?</li><li>Верните маркеры списку в одном месте, не отключая preflight. Какие два класса нужны?</li><li>В каком слое лежит preflight и почему класс <code>p-4</code> всегда его перебивает?</li></ul></div>
@@ -686,10 +688,12 @@ curl -s localhost:5173/src/style.css | grep -c '\.text-red-500'</code></pre>
   --color-brand-50:  oklch(97% 0.02 215);
   --color-brand-100: oklch(93% 0.04 215);
   --color-brand-200: oklch(87% 0.07 215);
+  --color-brand-300: oklch(80% 0.10 215);
   --color-brand-400: oklch(72% 0.12 215);
   --color-brand-500: oklch(63% 0.14 215);
   --color-brand-600: oklch(54% 0.13 215);
   --color-brand-700: oklch(46% 0.11 215);
+  --color-brand-800: oklch(38% 0.09 215);
   --color-brand-900: oklch(30% 0.07 215);
   --color-brand-950: oklch(21% 0.05 215);
 
@@ -726,8 +730,8 @@ curl -s localhost:5173/src/style.css | grep -c 'color-brand-50:'</code></pre>
 }</code></pre>
 <pre><code>&lt;!-- проверка: заголовок hero растёт по ступеням --&gt;
 &lt;h1 class="… text-4xl xs:text-5xl lg:text-6xl …"&gt;</code></pre>
-<div class="why"><b>Зачем:</b> <code>--color-*: initial</code> — «сбросить всё пространство имён». После этого исчезают не только <code>slate</code> и <code>sky</code>, но и <code>white</code>, <code>black</code>, <code>transparent</code> (кроме встроенных ключевых слов вроде <code>current</code> и <code>inherit</code>): <code>bg-white</code>, <code>text-white</code>, <code>text-slate-600</code> больше не генерируются, и кнопки теряют белый текст, фон страницы — белизну. Так делают дизайн-системы, которые хотят запретить «чужие» цвета, и тогда все нужные цвета (включая белый и статусные для бейджей) объявляются явно. Со шрифтами, радиусами и брейкпоинтами то же самое: <code>--breakpoint-2xl: initial</code> убирает один вариант, <code>--breakpoint-*: initial</code> — все. Новый <code>--breakpoint-xs</code> сразу даёт вариант <code>xs:</code>, и Tailwind сам ставит его в правильное место среди брейкпоинтов (до <code>sm</code>).</div>
-<div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>С <code>--color-*: initial</code> фирменные цвета работают, а серые тексты стали чёрными (цвет по умолчанию), кнопка «Войти» — тёмный текст на прозрачном фоне, <code>text-white</code> не действует. После удаления строки всё вернулось. Заголовок hero: 2.25rem на телефоне, 3rem от 480px, 3.75rem от 1024px. Класс <code>2xl:…</code> больше не генерирует CSS.</p></div>
+<div class="why"><b>Зачем:</b> <code>--color-*: initial</code> — «сбросить всё пространство имён». После этого исчезают не только <code>slate</code> и <code>sky</code>, но и <code>white</code> и <code>black</code> (встроенные значения <code>transparent</code>, <code>current</code> и <code>inherit</code> остаются): <code>bg-white</code>, <code>text-white</code>, <code>text-slate-600</code> больше не генерируются, и кнопки теряют белый текст, фон страницы — белизну. Так делают дизайн-системы, которые хотят запретить «чужие» цвета, и тогда все нужные цвета (включая белый и статусные для бейджей) объявляются явно. Со шрифтами, радиусами и брейкпоинтами то же самое: <code>--breakpoint-2xl: initial</code> убирает один вариант, <code>--breakpoint-*: initial</code> — все. Новый <code>--breakpoint-xs</code> сразу даёт вариант <code>xs:</code>, и Tailwind сам ставит его в правильное место среди брейкпоинтов (до <code>sm</code>).</div>
+<div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>С <code>--color-*: initial</code> фирменные цвета работают, а серые тексты стали чёрными (цвет по умолчанию), кнопка «Войти» — тёмный текст на прозрачном фоне, а на бирюзовой кнопке («Попробовать», <code>bg-brand-600</code>) фон остаётся, но <code>text-white</code> не действует, и текст на ней тоже тёмный. После удаления строки всё вернулось. Заголовок hero: 2.25rem на телефоне, 3rem от 480px, 3.75rem от 1024px. Класс <code>2xl:…</code> больше не генерирует CSS.</p></div>
 <div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Какой минимальный набор цветов пришлось бы объявить, чтобы лендинг работал с <code>--color-*: initial</code>? Составьте список по разметке.</li><li>Почему брейкпоинты задаются в <code>rem</code>? Что произойдёт при крупном шрифте пользователя?</li><li>Поставьте <code>--breakpoint-xs: 45rem</code> (больше, чем <code>sm</code>). В каком порядке пойдут медиазапросы в CSS и что станет с каскадом <code>xs:</code> и <code>sm:</code>?</li></ul></div>
 </div></div>
 
@@ -905,7 +909,7 @@ const events = [
   { time: '12:04:09', user: 'boris@corp.test', event: 'Загрузка отчёта',     status: 'warn' },
   { time: '12:03:58', user: 'vera@corp.test',  event: 'Вход в систему',      status: 'ok' },
   { time: '12:03:40', user: 'ivan@corp.test',  event: 'Экспорт в CSV',       status: 'fail' },
-  { time: '12:03:12', user: 'olga@corp.test',  event: 'Создание дашборда',   status: 'ok' },
+  { time: '12:03:12', user: 'olga.petrova.long@corp.test',  event: 'Создание дашборда',   status: 'ok' },
 ];
 
 const STATUS = {
@@ -945,7 +949,7 @@ const badge = (s) =&gt;
 
 <div class="session-banner" id="session-4">Сессия <a href="#session-4" style="color:#fff;text-decoration:none">4</a> — Адаптив и container queries: лендинг, app shell, карточки метрик, таблица <span>~3,5 часа</span></div>
 
-<div class="step" id="step-4-1"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-4-1"></label><span class="num">Шаг 4.1</span>Лендинг mobile-first: меню на popover для телефона, ступени шрифтов, max-* и диапазоны<a class="anchor" href="#step-4-1">#</a></span><div class="step-body">
+<div class="step" id="step-4-1"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-4-1"></label><span class="num">Шаг 4.1</span>Лендинг mobile-first: меню на popover для телефона, max-* и диапазоны<a class="anchor" href="#step-4-1">#</a></span><div class="step-body">
 <pre><code>&lt;!-- index.html: навбар — на телефоне меню в popover, с md — обычная навигация --&gt;
 &lt;div class="mx-auto flex max-w-6xl items-center gap-8 px-6 py-4"&gt;
   &lt;a href="/" class="text-xl font-extrabold tracking-tight"&gt;Pulse&lt;/a&gt;
@@ -1016,7 +1020,7 @@ const badge = (s) =&gt;
 <div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Меню на чекбоксе неудобно с клавиатуры и скринридером (нет <code>aria-expanded</code>, фокус не уходит в меню). Как сделать его доступнее? Сравните с popover из 4.1 или <code>&lt;dialog&gt;</code>.</li><li>Почему у <code>aside</code> на десктопе <code>lg:static</code>, а не просто <code>lg:translate-x-0</code>?</li><li>Как подсветить активный пункт без атрибута в разметке, если страница одна (подсказка: <code>aria-[current=page]:</code>)? Что правильнее семантически?</li></ul></div>
 </div></div>
 
-<div class="step" id="step-4-3"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-4-3"></label><span class="num">Шаг 4.3</span>Карточка метрики, которая знает своё место: @container, @sm:, единицы; ломаем забытым контейнером<a class="anchor" href="#step-4-3">#</a></span><div class="step-body">
+<div class="step" id="step-4-3"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-4-3"></label><span class="num">Шаг 4.3</span>Карточка метрики, которая знает своё место: @container, @sm:; ломаем забытым контейнером<a class="anchor" href="#step-4-3">#</a></span><div class="step-body">
 <pre><code>&lt;!-- app.html: в начало &lt;main&gt; --&gt;
 &lt;ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"&gt;
   &lt;li class="@container"&gt;
@@ -1077,7 +1081,7 @@ document.querySelector('#events tbody').innerHTML = [...events, ...events, ...ev
 &lt;div class="mt-4 overflow-x-auto lg:overflow-visible"&gt;
 &lt;thead class="sticky top-0 lg:top-[57px] …"&gt;      &lt;!-- 57px — высота липкой шапки приложения; лучше вынести в переменную --&gt;</code></pre>
 <div class="why"><b>Зачем:</b> <code>overflow-x-auto</code> у обёртки + <code>min-w-[40rem]</code> у таблицы — таблица не сжимается в кашу на телефоне, а прокручивается внутри карточки, не ломая страницу. <code>*:px-5 *:py-3</code> на строке — вариант «все прямые дети»: отступы ячеек задаются один раз, а не на каждой <code>td</code>. <code>odd:</code>/<code>even:</code> — зебра. <code>tabular-nums</code> выравнивает цифры по ширине. Главная ловушка — та же, что в CSS-лабе: <code>overflow</code> (любой, кроме <code>visible</code> и <code>clip</code>) делает обёртку контейнером прокрутки, и <code>sticky top-0</code> прилипает к её верху. Обёртка без ограничения высоты не прокручивается по вертикали, поэтому заголовок уезжает вместе со страницей. Tailwind здесь ни при чём: это механика CSS, записанная классами.</div>
-<div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>До починки: при прокрутке страницы заголовок таблицы уезжает. Способ 1: у таблицы своя прокрутка высотой 24rem, заголовок остаётся сверху карточки. Способ 2: на широком экране заголовок прилипает под шапкой приложения, на телефоне таблица прокручивается по горизонтали. Строки через одну чуть серее, длинные email обрезаны многоточием.</p></div>
+<div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>До починки: при прокрутке страницы заголовок таблицы уезжает. Способ 1: у таблицы своя прокрутка высотой 24rem, заголовок остаётся сверху карточки. Способ 2: на широком экране заголовок прилипает под шапкой приложения, на телефоне таблица прокручивается по горизонтали. Строки через одну чуть серее, длинный email (в данных из 3.4 — «olga.petrova.long@corp.test») обрезан многоточием.</p></div>
 <div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Как убрать «магическое» <code>top-[57px]</code>? (Подсказка: <code>--header-height</code> в <code>@theme</code> или на <code>:root</code> и <code>top-(--header-height)</code>.)</li><li>Почему <code>truncate</code> на <code>td</code> работает только с <code>max-w-*</code>? Как поведёт себя ячейка без него?</li><li>Какой вариант лучше для доступности и почему: таблица с горизонтальным скроллом или «карточки» вместо строк на телефоне?</li></ul></div>
 </div></div>
 
@@ -1138,7 +1142,7 @@ document.querySelectorAll('[data-theme-toggle]').forEach((btn) =&gt;
 &lt;!-- кнопку ◐ добавьте в шапку приложения --&gt;</code></pre>
 <div class="why"><b>Зачем:</b> по умолчанию <code>dark:</code> — это <code>@media (prefers-color-scheme: dark)</code>. Он слушает ОС и понятия не имеет о вашем атрибуте, поэтому кнопка «не работает». <code>@custom-variant dark (…)</code> переопределяет вариант: теперь <code>dark:</code> — «я сам или предок с <code>data-theme=dark</code>». <code>:where()</code> держит специфичность низкой. Инлайн-скрипт в <code>&lt;head&gt;</code> ставит атрибут до первой отрисовки (модульные скрипты отложенные, и с ними страница мигнула бы светлой). Для приложения удобнее второй подход: <code>@theme inline</code> превращает роли в утилиты, которые ссылаются на переменные (<code>bg-surface</code> → <code>background-color: var(--surface)</code>), а значения переменных переключает атрибут. В разметке один класс вместо пары <code>bg-white dark:bg-slate-900</code>, и тема живёт в одном месте — ровно как <code>light-dark()</code>-токены в CSS-лабе.</div>
 <div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>До <code>@custom-variant</code>: ◐ меняет атрибут (видно в Elements), но лендинг не меняется; при тёмной ОС он тёмный всегда. После: кнопка переключает тему, выбор переживает F5, мигания нет. Дашборд на ролях переключается целиком: фон, карточки, рамки, таблица; бейджи статусов пока светлые — это задание в «проверь себя».</p></div>
-<div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Почему в <code>@theme inline</code>, а не в обычном <code>@theme</code>? Что сгенерировала бы утилита <code>bg-surface</code> без <code>inline</code> и где сломалось бы переключение?</li><li>Сделайте бейджи статусов читаемыми в тёмной теме: <code>dark:bg-emerald-900/40 dark:text-emerald-300</code> — не забудьте, где живут эти классы (3.4).</li><li>Какой подход — <code>dark:</code> или роли — вы бы выбрали для лендинга и почему?</li></ul></div>
+<div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Почему в <code>@theme inline</code>, а не в обычном <code>@theme</code>? Что сгенерировала бы утилита <code>bg-surface</code> без <code>inline</code> и где сломалось бы переключение — например, для вложенного блока с собственным <code>data-theme</code>?</li><li>Сделайте бейджи статусов читаемыми в тёмной теме: <code>dark:bg-emerald-900/40 dark:text-emerald-300</code> — не забудьте, где живут эти классы (3.4).</li><li>Какой подход — <code>dark:</code> или роли — вы бы выбрали для лендинга и почему?</li></ul></div>
 </div></div>
 
 <div class="step" id="step-5-2"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-5-2"></label><span class="num">Шаг 5.2</span>Страница настроек: поля с user-invalid и peer-сообщением, переключатели на peer-checked, accent, модальное приглашение на dialog<a class="anchor" href="#step-5-2">#</a></span><div class="step-body">
@@ -1243,7 +1247,9 @@ document.querySelector('#open-invite')?.addEventListener('click', () =&gt; docum
 <pre><code>/* pulse/src/legacy-widget.css */
 .legacy-banner { @apply rounded-lg bg-amber-100 px-4 py-3 text-amber-900; }</code></pre>
 <pre><code>&lt;!-- settings.html, в &lt;head&gt; после основного стиля --&gt;
-&lt;link rel="stylesheet" href="/src/legacy-widget.css"&gt;</code></pre>
+&lt;link rel="stylesheet" href="/src/legacy-widget.css"&gt;
+&lt;!-- и в &lt;main&gt; — сам виджет --&gt;
+&lt;div class="legacy-banner"&gt;Старый виджет&lt;/div&gt;</code></pre>
 <p>Посмотрите на лог контейнера и на страницу. Почините первой строкой файла:</p>
 <pre><code>@reference "./style.css";     /* дать файлу тему и утилиты, не дублируя их в выходном CSS */
 .legacy-banner { @apply rounded-lg bg-amber-100 px-4 py-3 text-amber-900; }</code></pre>
@@ -1292,7 +1298,7 @@ Are you using CSS modules or similar and missing `@reference`?</pre>
 <div class="step" id="step-6-1"><span class="step-head"><label class="done-label" title="Отметить шаг пройденным"><input type="checkbox" class="done" data-key="step-6-1"></label><span class="num">Шаг 6.1</span>Сборка: размер CSS, только использованные классы; ломаем раздутой сборкой из забытой папки, чиним @source not<a class="anchor" href="#step-6-1">#</a></span><div class="step-body">
 <pre><code>docker compose exec dev npx vite build
 ls -la pulse/dist pulse/dist/assets
-wc -c pulse/dist/assets/*.css</code></pre>
+wc -c pulse/dist/assets/*.css        # css-файлов два: основной и legacy-widget из 5.3 — смотрите на основной, он больше</code></pre>
 <p>Теперь смоделируем «забытую» папку со старой вёрсткой — такие часто лежат в репозиториях:</p>
 <pre><code>mkdir -p pulse/src/legacy
 # старая страница с кучей неиспользуемых на сайте классов
@@ -1322,13 +1328,13 @@ docker compose exec dev npx vite build &amp;&amp; wc -c pulse/dist/assets/*.css<
 }</code></pre>
 <pre><code># до: посмотрите порядок классов у любой кнопки, затем
 docker compose exec dev npx prettier --write "*.html" "src/**/*.js"
-git diff --stat &amp;&amp; git diff index.html | head -30</code></pre>
+git diff --stat &amp;&amp; git diff pulse/index.html | head -30</code></pre>
 <pre><code>&lt;!-- печать: убрать навигацию и кнопки, оставить контент --&gt;
 &lt;header class="… print:hidden"&gt;
 &lt;aside class="… print:hidden"&gt;
 &lt;button data-theme-toggle class="… print:hidden"&gt;</code></pre>
 <p>Проход по доступности, 15 минут: только клавиатурой пройдите лендинг, дашборд (включая меню и модалку) и настройки; включите в DevTools → Rendering «Emulate prefers-reduced-motion» и «Emulate vision deficiencies: blurred vision»; проверьте контраст <code>text-slate-500</code> на <code>bg-slate-50</code> и в тёмной теме.</p>
-<div class="why"><b>Зачем:</b> порядок классов на результат не влияет (1.4), но влияет на чтение. Когда у каждого разработчика свой порядок, ревью превращается в поиск. Плагин Prettier сортирует классы в официальном порядке Tailwind: раскладка → блок → отступы → типографика → цвета → варианты. Ему нужен путь к вашей таблице стилей (<code>tailwindStylesheet</code>), чтобы знать ваши токены и утилиты. Длинный <code>class</code> читается легче с переносами по смыслу, как в шагах лабы. Доступность в Tailwind не «встроена»: <code>sr-only</code>, <code>focus-visible:</code>, <code>motion-safe:</code>, <code>aria-*:</code> — инструменты, но ставите их вы. Вариант <code>print:</code> — это <code>@media print</code>.</div>
+<div class="why"><b>Зачем:</b> порядок классов на результат не влияет (1.4), но влияет на чтение. Когда у каждого разработчика свой порядок, ревью превращается в поиск. Плагин Prettier сортирует классы в официальном порядке Tailwind: примерно по порядку свойств CSS (раскладка и блок, рамки и фон, отступы, типографика, эффекты), а варианты — после обычных классов. Ему нужен путь к вашей таблице стилей (<code>tailwindStylesheet</code>), чтобы знать ваши токены и утилиты. Длинный <code>class</code> читается легче с переносами по смыслу, как в шагах лабы. Доступность в Tailwind не «встроена»: <code>sr-only</code>, <code>focus-visible:</code>, <code>motion-safe:</code>, <code>aria-*:</code> — инструменты, но ставите их вы. Вариант <code>print:</code> — это <code>@media print</code>.</div>
 <div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span><p>Prettier переставил классы во всех файлах: например, <code>rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white</code> становится упорядоченным одинаково везде, варианты (<code>hover:</code>, <code>md:</code>) в конце. Предпросмотр печати (Ctrl+P) показывает контент без навигации. Клавиатурой проходится всё, фокус всегда виден, при reduced motion ничего не выезжает и не всплывает.</p></div>
 <div class="note-box"><span class="tag">ПРОВЕРЬ СЕБЯ</span><ul><li>Найдите на страницах три места, где фокус был плохо виден или терялся. Как исправили?</li><li>Почему Prettier-плагину нужен путь к CSS в v4, а в v3 хватало JS-конфига?</li><li>Что читается легче: длинный <code>class</code> с переносами или короткий <code>.btn btn-primary</code>? Где проходит ваша граница?</li></ul></div>
 </div></div>
@@ -1351,7 +1357,7 @@ server {
   root /usr/share/nginx/html;
   location ~* ^/assets/ { add_header Cache-Control "public, max-age=31536000, immutable"; }
   location ~* \.html$  { add_header Cache-Control "no-cache"; }
-  location / { try_files $uri $uri.html $uri/ =404; }      # /app и /app.html — обе работают
+  location / { add_header Cache-Control "no-cache"; try_files $uri $uri.html $uri/ =404; }   # /app и /app.html — обе работают; /app.html отдаётся внутри этого location, поэтому no-cache нужен и здесь
 }</code></pre>
 <pre><code># pulse/.dockerignore
 node_modules
@@ -1363,7 +1369,7 @@ dist</code></pre>
     ports: ["8080:80"]</code></pre>
 <pre><code>docker compose --profile prod up -d --build prod
 curl -s -o /dev/null -w "%{http_code}\n" localhost:8080/app
-curl -sI localhost:8080/assets/$(ls pulse/dist/assets | grep '\.css$') | grep -i cache-control</code></pre>
+curl -sI localhost:8080/assets/$(ls pulse/dist/assets | grep '\.css$' | head -1) | grep -i cache-control</code></pre>
 <div class="why"><b>Зачем:</b> сборка идёт в образе <code>node:22-slim</code>, а в финальный образ попадает только статика из <code>dist</code> — ни Node, ни <code>node_modules</code>. Файлы в <code>assets/</code> содержат хеш в имени: при изменении CSS меняется имя, поэтому их можно кешировать навсегда (<code>immutable</code>). HTML не кешируется, иначе пользователь получит старую страницу со ссылками на удалённые файлы. Это многостраничный сайт, а не SPA: fallback на <code>index.html</code> не нужен, достаточно <code>try_files</code> с <code>$uri.html</code> для красивых адресов.</div>
 <div class="fix-box"><span class="tag">ОЖИДАЕМЫЙ РЕЗУЛЬТАТ</span>
 <pre>200
