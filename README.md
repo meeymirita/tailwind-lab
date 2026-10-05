@@ -1,6 +1,6 @@
 # Tailwind Lab — Pulse
 
-![Tailwind](tailwind.png)
+![Tailwind](https://meeymirita-files.storage.yandexcloud.net/tailwind/tailwind.png)
 
 > **30.09.2026 — методичка вычитана и исправлена.** Что найдено и что поправлено — в [fixes/frontend/tailwind.md](https://github.com/meeymirita/lab-fixes/blob/main/frontend/tailwind.md) репозитория `lab-fixes`.
 
